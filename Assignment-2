@@ -1,0 +1,216 @@
+#include<bits/stdc++.h>
+
+#define pb(x) push_back(x);
+#define gc getchar_unlocked
+#define pc(x) putchar_unlocked(x);
+#define inf 1<<30
+#define mod 1000000007
+   
+using namespace std;
+
+typedef pair<int,int> pii;
+
+map<char,int> mymap;
+char top;
+
+int abso(int a,int b)
+{
+	if(a<b)
+		return b-a;
+	else
+		return a-b;
+}
+
+typedef struct n node;
+typedef node *link;
+
+struct n
+{
+	char data;
+	link prev,next;
+};
+
+bool empty(link temp)
+{
+	if(temp==NULL)
+		return true;
+	else
+		return false;
+}
+
+bool preced(char x,char y)
+{
+	string p="",q="";
+	p.pb(x);
+	q.pb(y);
+	if(p=="(")
+		return false;
+	if(q=="(")
+	{
+		if(p==")")
+			return true;
+		else
+			return false;
+	}
+	if(q==")")
+	{
+		if(p=="(")
+			return false;
+		else
+			return true;
+	}
+	if(mymap[x]>=mymap[y])
+		return true;
+	else
+		return false;
+}
+
+link pop(link st)
+{
+	//char temp=st->data;
+	link temp=st;
+	st=st->prev;
+	if(st!=NULL)
+		st->next=NULL;
+	//cout<<"hello"<<endl;
+	free(temp);
+	//cout<<"hello"<<endl;
+	return st;
+}
+
+link push(char temp,link st,link p)
+{
+	//cout<<"my"<<endl;
+	if(st==NULL)
+	{
+		st=(link)malloc(sizeof(node));
+		st->data=temp;
+		st->next=NULL;
+		st->prev=p;
+		return st;
+	}
+	st->next=push(temp,st->next,st);
+	return st->next;
+}
+
+int main()
+{
+	link st=NULL;
+	string str,ans="",p;
+	char ch;
+	cin>>str;
+	//cout<<"str "<<str<<endl;
+	mymap['+']=mymap['-']=1;
+	mymap['*']=mymap['/']=2;
+	for(int i=0;i<str.size();i++)
+	{
+		//cout<<"i "<<i<<" "<<str[i]<<endl;
+		ch=str[i];
+		p="";
+		p.pb(ch);
+		if(((ch-'a')>=0&&(ch-'a')<=25)||((ch-'A')>=0&&(ch-'A')<=25))
+		{
+			ans.pb(ch);
+		}
+		else
+		{
+			while(!empty(st)&&preced(st->data,ch))
+			{
+				top=st->data;
+				st=pop(st);
+				ans.pb(top);
+			}
+			if(empty(st)||p!=")")
+			{
+				st=push(ch,st,st);
+		//		cout<<st->data<<endl;
+			}
+			else
+			{
+				top=st->data;
+				st=pop(st);
+			}
+		}
+		//cout<<"ans "<<ans<<endl;
+	}
+	//cout<<st->data<<endl;
+	while(!empty(st))
+	{
+		//cout<<"hello"<<endl;
+		top=st->data;
+		st=pop(st);
+		//cout<<"top "<<top<<endl;
+		ans.pb(top);
+	}
+	cout<<ans<<endl;
+	st=NULL;
+	char temp1,temp2;
+	int k=0;
+	for(int i=0;i<ans.size();i++)
+	{
+		ch=ans[i];
+		if(((ch-'a')>=0&&(ch-'a')<=25)||((ch-'A')>=0&&(ch-'A')<=25))
+		{
+			st=push(ch,st,st);
+		}
+		else
+		{
+			temp1=st->data;
+			st=pop(st);
+			temp2=st->data;
+			st=pop(st);
+			if(((temp2-'0')>0)&&((temp2-'0')<=9))
+			{
+				cout<<"LD TEMP"<<temp2<<endl;
+			}
+			else
+			{	
+				cout<<"LD "<<temp2<<endl;
+			}
+			switch(ch)
+			{
+				case '+':
+					if(((temp1-'0')>0)&&((temp1-'0')<=9))
+					{
+						cout<<"AD TEMP"<<temp1<<endl;
+					}
+					else
+						cout<<"AD "<<temp1<<endl;
+					st=push(++k+'0',st,st);
+					cout<<"ST TEMP"<<k<<endl;
+					break;
+				case '-':
+					if(((temp1+'0')>0)&&((temp1-'0')<=9))
+					{
+						cout<<"SB TEMP"<<temp1<<endl;
+					}
+					else
+						cout<<"SB "<<temp1<<endl;
+					st=push(++k+'0',st,st);
+					cout<<"ST TEMP"<<k<<endl;
+					break;
+				case '*':
+					if(((temp1+'0')>0)&&((temp1-'0')<=9))
+					{
+						cout<<"ML TEMP"<<temp1<<endl;
+					}
+					else
+						cout<<"ML "<<temp1<<endl;
+					st=push(++k+'0',st,st);
+					cout<<"ST TEMP"<<k<<endl;
+					break;
+				case '/':
+					if(((temp1-'0')>0)&&((temp1-'0')<=9))
+					{
+						cout<<"DV TEMP"<<temp1<<endl;
+					}
+					else
+						cout<<"DV "<<temp1<<endl;
+					st=push(++k+'0',st,st);
+					cout<<"ST TEMP"<<k<<endl;
+					break;
+			}
+		}
+	}
+	return 0;
+}
