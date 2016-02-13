@@ -1,0 +1,159 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+typedef struct n tree;
+typedef tree *link;
+
+//link1 ext;
+
+struct n
+{
+	link left,right;
+	int val,level;
+};
+
+typedef struct m node;
+typedef node *link1;
+
+struct m
+{
+	link temp;
+	link1 next;
+};
+
+typedef struct qu q;
+typedef q *link2;
+struct qu
+{
+	link1 front,rear;
+	int size;
+};
+
+int visit[30],n;
+
+link2 push(link2 head,link root)
+{
+	if(head->rear==NULL)
+	{
+		head->rear=(link1)malloc(sizeof(node));
+		head->rear->temp=root;
+		head->rear->next=NULL;
+		//head->rear->val=-1;
+		//head->rear->level=-1;
+		head->front=head->rear;
+		return head;
+	}
+	head->rear=head->rear->next;
+	head->rear=(link1)malloc(sizeof(node));
+	head->rear->temp=root;
+	head->rear->next=NULL;
+	//head->rear->val=-1;
+	//head->rear->level=-1;
+	//head->front=head->rear;
+	return head;
+}
+
+
+int func(int mask,char str[])
+{
+	//printf("mask %d\n",mask);
+	int i,temp1=1,temp2,val;
+	for(i=0;i<strlen(str);i++)
+	{
+		if(str[i]=='(')
+		{
+			temp2=0;
+			i++;
+			while(str[i]!=')')
+			{
+				if(str[i]=='-')
+				{
+					i++; 
+					//printf(" %c\n",str[i]);
+					temp2=temp2 | !((mask&(1<<(n-(str[i]-'A')-1)))>0?1:0);
+					//printf("temp2 %d\n",temp2);
+				}
+				else if((str[i]-'A')>=0&&(str[i]-'A')<=25)
+				{
+					//printf(" %c\n",str[i]);
+					//printf("  %d \n",mask&(1<<(str[i]-'A')));
+					temp2=temp2 | ((mask&(1<<(n-(str[i]-'A')-1)))>0?1:0);
+					//printf("temp2 %d\n",temp2);
+				}
+				i++;
+			}
+			temp1=temp1 & temp2;
+		}
+	}
+	return temp1;
+}
+
+void recurse(int node,int tree[],int level)
+{
+	int x1,x2;
+	x1=2*node+1;
+	x2=2*node+2;
+	if(x1>=((1<<(n+1))-1))
+	{
+		return;
+	}
+	recurse(2*node+1,tree,level+1);
+	recurse(2*node+2,tree,level+1);
+	if(level%2)
+	{
+		tree[node]=tree[2*node+1] & tree[2*node+2];
+	}
+	else
+	{
+		tree[node]=tree[2*node+1] | tree[2*node+2];
+	}
+}
+
+void print(int node,int tree[])
+{
+	printf("%d",tree[node]);
+	int x1,x2;
+	x1=2*node+1;
+	x2=2*node+2;
+	if(x1>=((1<<(n+1))-1))
+	{
+		return;
+	}
+	print(x1,tree);
+	print(x2,tree);
+}
+
+int main()
+{
+	char str[100];
+	scanf("%s",str);
+	int i,size=0;
+	for(i=0;i<strlen(str);i++)
+	{
+		if((str[i]-'A')>=0&&((str[i]-'A')<=25)&&!(visit[str[i]-'A']))
+		{
+			visit[str[i]-'A']=1;
+			size++;
+		}
+	}
+	n=size;
+	int arr[size+1];
+	for(i=0;i<=size;i++)
+		arr[i]=-1;
+	int tree[100000];
+	int leaf[100000];
+	int temp=(1<<(size))-1;
+	int mask=0;
+	for(mask;mask<(1<<size);mask++)
+	{
+		tree[temp]=func(mask,str);
+		//cout<<tree[temp]<<endl;
+		//printf("%d\n",tree[temp]);
+		temp++;
+	}
+	recurse(0,tree,0); 
+	print(0,tree);
+	printf("\n");
+	return 0;
+}
