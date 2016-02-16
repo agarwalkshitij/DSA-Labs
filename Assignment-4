@@ -1,0 +1,205 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include<math.h>
+
+typedef struct no pair;
+
+typedef struct n tree;
+typedef tree *link;
+
+struct n
+{
+	link left,right;
+	char str;
+};
+
+struct no
+{
+	int first;
+	char second;
+	link node;
+};
+
+int freq[30],size,num=0;
+char map[30][200];
+
+void min_heapify(pair arr[],int ind)
+{
+	int l,r;
+	l=2*ind;
+	if(l>size)
+		return ;
+	r=2*ind+1;
+	pair temp;
+	if(r>size)
+		r=-1;
+	int smallest;
+	if(arr[ind].first>arr[l].first)
+		smallest=l;
+	else
+		smallest=ind;
+	if(r!=-1)
+	{
+		if(arr[smallest].first>arr[r].first)
+			smallest=r;
+	}
+	if(smallest!=ind)
+	{
+		temp=arr[smallest];
+		arr[smallest]=arr[ind];
+		arr[ind]=temp;
+		min_heapify(arr,smallest);
+	}
+}
+
+pair extract_min(pair arr[])
+{
+	pair temp=arr[1];
+	arr[1]=arr[size];
+	size--;
+	min_heapify(arr,1);
+	return temp;
+}
+
+link createleaf(pair temp)
+{
+	link newnode=(link)malloc(sizeof(tree));
+	newnode->left=newnode->right=NULL;
+	newnode->str=temp.second;
+	num++;
+	return newnode;
+}
+
+link createnode(link l,link r)
+{
+	link newnode=(link)malloc(sizeof(tree));
+	newnode->left=l;
+	newnode->right=r;
+	num++;
+	return newnode;
+}
+
+void insert(pair arr[],pair temp)
+{
+	if(size==0)
+	{
+		size++;
+		arr[size]=temp;
+		return;
+	}
+	pair x=arr[1];
+	arr[1]=temp;
+	size++;
+	arr[size]=x;
+	min_heapify(arr,1);
+}
+
+void post_order(link root)
+{
+	if(root->left!=NULL)
+	{	
+		post_order(root->left);
+		post_order(root->right);
+		printf("0");
+		return;
+	}
+	printf("%c",root->str);
+}
+
+void inorder(link root)
+{
+	if(root->left!=NULL)
+	{	
+		inorder(root->left);
+		printf("0");
+		inorder(root->right);
+		return;
+	}
+	printf("%c",root->str);
+}
+
+void traverse(link root,int i,char st[])
+{
+	if(root->left==NULL)
+	{
+		strcpy(map[root->str-'A'],st);
+		return;
+	}
+	else
+	{
+		st[i]='0';
+		traverse(root->left,i+1,st);
+		st[i]='1';
+		traverse(root->right,i+1,st);
+	}
+}
+
+int main()
+{
+	char str[1000];
+	scanf("%s",str);
+	int i;
+	for(i=0;i<strlen(str);i++)
+		freq[(str[i]-'A')+1]++;
+	pair arr[30];
+	int k=1;
+	for(i=1;i<=26;i++)
+	{
+		if(freq[i])
+		{
+			arr[k].first=freq[i];
+			arr[k].second='A'+i-1;
+			arr[k].node=NULL;
+			k++;
+		}
+	}
+	size=k-1;
+	for(i=size/2;i>=1;i--)
+	{
+		min_heapify(arr,i);
+	}
+	pair temp1,temp2,temp;
+	link new1,new2;
+	k=1;
+	while(size>1)
+	{
+		temp1=extract_min(arr);
+		temp2=extract_min(arr);
+		if(temp1.node==NULL&&temp2.node==NULL)
+		{
+			new1=createleaf(temp1);
+			new2=createleaf(temp2);
+		}
+		else if(temp1.node!=NULL&&temp2.node!=NULL)
+		{
+			new1=temp1.node;
+			new2=temp2.node;
+		}
+		else
+		{
+			if(temp1.node==NULL)
+				new1=createleaf(temp1);
+			else 
+				new2=temp1.node;
+			if(temp2.node==NULL)
+				new1=createleaf(temp2);
+			else
+				new2=temp2.node;
+		}
+		temp.first=temp1.first+temp2.first;
+		temp.node=createnode(new1,new2);
+		insert(arr,temp);
+		k++;
+	}
+	link root=arr[1].node;
+	printf("%d",num);
+	post_order(root);
+	inorder(root);
+	char st[200]="";
+	traverse(root,0,st);
+	for(i=0;i<strlen(str);i++)
+		printf("%s",map[str[i]-'A']);
+	printf("\n");
+	return 0;
+}
