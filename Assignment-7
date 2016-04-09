@@ -1,0 +1,202 @@
+#include<string.h>
+#include<stdio.h>
+#include<math.h>
+#include<stdlib.h>
+
+struct n;
+typedef struct n node;
+typedef node *link;
+
+struct n
+{
+	int ind,rel,con,pr;
+	link left,right,parent;
+};
+
+link createnode(int i,int r,int c,int p)
+{
+	link newnode=(link)malloc(sizeof(node));
+	newnode->ind=i;
+	newnode->rel=r;
+	newnode->con=c;
+	newnode->pr=p;
+	newnode->left=NULL;
+	newnode->right=NULL;
+	newnode->parent=NULL;
+	return newnode;
+}
+
+
+link tree_min(link root)
+{
+	if(root->left!=NULL)
+		return tree_min(root->left);
+	else
+		return root; 
+}
+
+link tree_max(link root)
+{
+	if(root->right!=NULL)
+		return tree_max(root->right);
+	else
+		return root;
+}
+
+
+link insert(link root,link temp,link prev)
+{
+	if(root==NULL)
+	{
+		root=temp;
+		root->parent=prev;
+		return root;
+	}
+	else
+	{
+		if(root->pr>=temp->pr)
+			root->right=insert(root->right,temp,root);
+		else
+			root->left=insert(root->left,temp,root);
+	}
+}
+
+link transplant(link root,link u,link v)
+{
+	if(u->parent==NULL)
+		root=v;
+	else
+	{
+		if(u==(u->parent)->left)
+			(u->parent)->left=v;
+		else
+			(u->parent)->right=v;
+	}
+	if(v!=NULL)
+		v->parent=u->parent;
+	return root;
+}
+
+link tree_delete(link root,link z)
+{
+	if(z->left==NULL)
+		root=transplant(root,z,z->right);
+	else
+	{
+		if(z->right==NULL)
+			root=transplant(root,z,z->left);
+		else
+		{
+			link y = tree_min(z->right);
+			if(y->parent!=z)
+			{
+				root=transplant(root,y,y->right);
+				y->right = z->right;
+				(y->right)->parent = y;
+			}
+			root = transplant(root,z,y);
+			y->left=z->left;
+			(y->left)->parent = y;
+		}
+	}
+	return root;
+}
+
+link tree_pred(link x)
+{
+	if(x->left!=NULL)
+		return tree_max(x->left);
+	link y= x->parent;
+	while(y!=NULL && x==y->left)
+	{
+		x=y;
+		y=y->parent;
+	}
+	return y;
+}
+
+link tree_suc(link x)
+{
+	if(x->right!=NULL)
+		return tree_min(x->right);
+	link y= x->parent;
+	while(y!=NULL && x==y->right)
+	{
+		x=y;
+		y=y->parent;
+	}
+	return y;
+}
+
+link tree_search(link root,int k)
+{
+	if(root==NULL || k==root->pr)
+		return root;
+	if(k<root->pr)
+		return tree_search(root->left,k);
+	else
+		return tree_search(root->right,k);
+}
+
+int main()
+{
+	FILE *fp;
+	int n,i,r,c,p,t=0;
+	fp=stdin;
+	link root=NULL,cur=NULL;
+	while((n=fscanf(fp,"%d%d%d%d",&i,&r,&c,&p))==4)
+	{
+		printf("%d %d %d %d\n",i,r,c,p);
+		link temp=createnode(i,r,c,p);
+		while(t<temp->rel)
+		{
+			if(cur==NULL)
+			{
+				printf("%d\n",0);
+				t++;
+			}
+			else
+			{
+				if(cur->con>0)
+				{
+					printf("%d\n",cur->ind);
+					cur->con--;
+					t++;
+				}
+				else
+				{
+					cur=tree_max(root);
+					root=tree_delete(root,cur);
+				}
+			}
+		}
+		if(cur!=NULL&&cur->pr<=temp->pr)
+		{
+			root=insert(root,cur,NULL);
+			cur=NULL;
+		}
+		root=insert(root,temp,NULL);
+	}
+	while(cur!=NULL || root!=NULL)
+	{
+		if(cur==NULL)
+		{
+			printf("%d\n",0);
+			t++;
+		}
+		else
+		{
+			if(cur->con>0)
+			{
+				printf("%d\n",cur->ind);
+				cur->con--;
+				t++;
+			}
+			else
+			{
+				cur=tree_max(root);
+				root=tree_delete(root,cur);
+			}
+		}
+	}
+}
