@@ -1,0 +1,303 @@
+#include<stdlib.h>
+#include<stdio.h>
+#include<string.h>
+#include<math.h>
+
+struct nod;
+typedef struct nod node;
+typedef node *link;	
+
+struct nod
+{
+	link left,right;
+	int bf,ht;
+	char *st;
+};
+
+link createnode(char s[])
+{
+	link newnode=(link)malloc(sizeof(node));
+	newnode->left=newnode->right=NULL;
+	newnode->bf=0;
+	newnode->ht=1;
+	newnode->st=(char *)malloc(50*sizeof(char));
+	strcpy(newnode->st,s);
+	return newnode;
+}
+
+int max(int a,int b)
+{
+	if(a>b)
+		return a;
+	else
+		return b;
+}
+
+link insert(link root,link temp)
+{
+	if(root==NULL)
+	{
+		root=temp;
+		return root;
+	}
+	int cmp=strcmp(temp->st,root->st);
+	if(cmp<0)
+	{
+		if(root->left!=NULL)
+			root->left=insert(root->left,temp);
+		else
+			root->left=temp;
+		if(root->right==NULL)
+		{
+			root->bf=root->left->ht;
+			root->ht=root->left->ht+1;
+		}
+		else
+		{
+			root->bf=root->left->ht-root->right->ht;
+			root->ht=1+max(root->left->ht,root->right->ht);
+		}
+	}
+	else
+	{
+		if(root->right!=NULL)
+			root->right=insert(root->right,temp);
+		else
+			root->right=temp;
+		if(root->left==NULL)
+		{
+			root->bf=0-root->right->ht;
+			root->ht=root->right->ht+1;
+		}
+		else
+		{
+			root->bf=root->left->ht-root->right->ht;
+			root->ht=1+max(root->left->ht,root->right->ht);
+		}
+	}
+	link a,b,c,al,ar,bl,br,cl,cr;
+	if(root->bf==2)
+	{
+		int cmp=strcmp(temp->st,root->left->st);
+		if(cmp<0)		//left-left rotation
+		{
+			a=root;
+			b=root->left;
+			ar=root->right;
+			bl=b->left;
+			br=b->right;
+			a->left=br;
+			b->right=a;
+			if(ar==NULL&&br==NULL)
+			{
+				a->ht=1;
+				a->bf=0;
+			}
+			else if(ar!=NULL&&br==NULL)
+			{
+				a->bf=0-ar->ht;
+				a->ht=1+ar->ht;
+			}
+			else if(ar==NULL&&br!=NULL)
+			{
+				a->bf=br->ht;
+				a->ht=1+br->ht;
+			}
+			else
+			{
+				a->bf=br->ht-ar->ht;
+				a->ht=1+max(br->ht,ar->ht);
+			}
+			b->ht=1+max(bl->ht,a->ht);
+			b->bf=bl->ht-a->ht;
+			return b;
+		}
+		else	//left-right rotation
+		{
+			a=root;
+			b=a->left;
+			c=b->right;
+			bl=b->left;
+			cl=c->left;
+			cr=c->right;
+			ar=a->right;
+			c->left=b;
+			c->right=a;
+			a->left=cr;
+			b->right=cl;
+			if(bl==NULL&&cl==NULL)
+			{
+				b->bf=0;
+				b->ht=1;
+			}
+			else if(bl==NULL&&cl!=NULL)
+			{
+				b->ht=1+cl->ht;
+				b->bf=0-cl->ht;
+			}
+			else if(bl!=NULL&&cl==NULL)
+			{
+				b->ht=1+bl->ht;
+				b->bf=bl->ht;
+			}
+			else
+			{
+				b->ht=1+max(bl->ht,cl->ht);
+				b->bf=bl->ht-cl->ht;
+			}
+			if(cr==NULL&&ar==NULL)
+			{
+				a->ht=1;
+				a->bf=0;
+			}
+			if(cr!=NULL&&ar==NULL)
+			{
+				a->ht=cr->ht+1;
+				a->bf=cr->ht;
+			}
+			if(cr==NULL&&ar!=NULL)
+			{
+				a->ht=1+ar->ht;
+				a->bf=0-ar->ht;
+			}
+			if(cr!=NULL&&ar!=NULL)
+			{
+				a->ht=1+max(cr->ht,ar->ht);
+				a->bf=cr->ht-ar->ht;
+			}
+			c->ht=max(a->ht,b->ht)+1;
+			c->bf=b->ht-a->ht;
+			return c;
+		}
+	}
+	else if(root->bf==-2)
+	{
+		int cmp=strcmp(temp->st,root->right->st);
+		if(cmp<0)	//right-left rotation	
+		{
+			a=root;
+			b=root->right;
+			c=b->left;
+			br=b->right;
+			al=a->left;
+			cl=c->left;
+			cr=c->right;
+			a->right=cl;
+			b->left=cr;
+			c->left=a;
+			c->right=b;
+			if(al==NULL&&cl==NULL)
+			{
+				a->ht=1;
+				a->bf=0;
+			}
+			else if(al!=NULL&&cl==NULL)
+			{
+				a->ht=al->ht+1;
+				a->bf=al->ht;
+			}
+			else if(al==NULL&&cl!=NULL)
+			{
+				a->ht=1+cl->ht;
+				a->bf=0-cl->ht;
+			}
+			else
+			{
+				a->ht=1+max(al->ht,cl->ht);
+				a->bf=al->ht-cl->ht;
+			}
+			if(cr==NULL&&br==NULL)
+			{
+				b->ht=1;
+				b->bf=0;
+			}
+			else if(cr!=NULL&&br==NULL)
+			{
+				b->ht=1+cr->ht;
+				b->bf=cr->ht;
+			}
+			else if(cr==NULL&&br!=NULL)
+			{
+				b->ht=1+br->ht;
+				b->bf=0-br->ht;
+			}
+			else
+			{
+				b->ht=1+max(cr->ht,br->ht);
+				b->bf=cr->ht-br->ht;
+			}
+			c->ht=max(a->ht,b->ht)+1;
+			c->bf=b->ht-a->ht;
+			return c;
+		}
+		else	//right-right rotation
+		{
+			a=root;
+			b=root->right;
+			al=a->left;
+			bl=b->left;
+			br=b->right;
+			a->right=bl;
+			b->left=a;
+			if(al==NULL&&bl==NULL)
+			{
+				a->ht=1;
+				a->bf=0;
+			}
+			else if(al!=NULL&&bl==NULL)
+			{
+				a->bf=0-al->ht;
+				a->ht=1+al->ht;
+			}
+			else if(al==NULL&&bl!=NULL)
+			{
+				a->bf=bl->ht;
+				a->ht=1+bl->ht;
+			}
+			else
+			{
+				a->bf=bl->ht-al->ht;
+				a->ht=1+max(bl->ht,al->ht);
+			}
+			b->ht=1+max(br->ht,a->ht);
+			b->bf=a->ht-br->ht;
+			return b;
+		}
+	}
+	return root;
+}
+
+void inorder(link root)
+{
+	if(root==NULL)
+		return ;
+	inorder(root->left);
+	printf("%s %d %d\n",root->st,root->ht,root->bf);
+	inorder(root->right);
+}
+
+void preorder(link root)
+{
+	if(root==NULL)
+		return ;
+	printf("%s %d %d\n",root->st,root->ht,root->bf);
+	preorder(root->left);
+	preorder(root->right);
+}
+
+int main()
+{
+	FILE *fp;
+	int n;
+	fp=stdin;
+	char str[50];
+	link root=NULL;
+	while((n=fscanf(fp,"%s",str))==1)
+	{
+		link temp=createnode(str);
+		root=insert(root,temp);
+	}
+	inorder(root);
+	preorder(root);
+	return 0;
+}
