@@ -9,16 +9,13 @@ typedef node *link;
 
 struct n
 {
-	int ind,rel,con,pr;
+	int pr;
 	link left,right,parent;
 };
 
-link createnode(int i,int r,int c,int p)
+link createnode(int p)
 {
 	link newnode=(link)malloc(sizeof(node));
-	newnode->ind=i;
-	newnode->rel=r;
-	newnode->con=c;
 	newnode->pr=p;
 	newnode->left=NULL;
 	newnode->right=NULL;
@@ -50,15 +47,15 @@ link insert(link root,link temp,link prev)
 	{
 		root=temp;
 		root->parent=prev;
-		return root;
 	}
 	else
 	{
-		if(root->pr>=temp->pr)
+		if(root->pr<=temp->pr)
 			root->right=insert(root->right,temp,root);
 		else
 			root->left=insert(root->left,temp,root);
 	}
+	return root;
 }
 
 link transplant(link root,link u,link v)
@@ -138,65 +135,25 @@ link tree_search(link root,int k)
 		return tree_search(root->right,k);
 }
 
+void inorder(link root)
+{
+	if(root->left!=NULL)
+		inorder(root->left);
+	printf("%d\n",root->pr);
+	if(root->right!=NULL)
+		inorder(root->right);
+}
+
 int main()
 {
-	FILE *fp;
-	int n,i,r,c,p,t=0;
-	fp=stdin;
-	link root=NULL,cur=NULL;
-	while((n=fscanf(fp,"%d%d%d%d",&i,&r,&c,&p))==4)
+	int n,i,k;
+	scanf("%d",&n);
+	link root=NULL;
+	for(i=1;i<=n;i++)
 	{
-		printf("%d %d %d %d\n",i,r,c,p);
-		link temp=createnode(i,r,c,p);
-		while(t<temp->rel)
-		{
-			if(cur==NULL)
-			{
-				printf("%d\n",0);
-				t++;
-			}
-			else
-			{
-				if(cur->con>0)
-				{
-					printf("%d\n",cur->ind);
-					cur->con--;
-					t++;
-				}
-				else
-				{
-					cur=tree_max(root);
-					root=tree_delete(root,cur);
-				}
-			}
-		}
-		if(cur!=NULL&&cur->pr<=temp->pr)
-		{
-			root=insert(root,cur,NULL);
-			cur=NULL;
-		}
+		scanf("%d",&k);
+		link temp=createnode(k);
 		root=insert(root,temp,NULL);
 	}
-	while(cur!=NULL || root!=NULL)
-	{
-		if(cur==NULL)
-		{
-			printf("%d\n",0);
-			t++;
-		}
-		else
-		{
-			if(cur->con>0)
-			{
-				printf("%d\n",cur->ind);
-				cur->con--;
-				t++;
-			}
-			else
-			{
-				cur=tree_max(root);
-				root=tree_delete(root,cur);
-			}
-		}
-	}
+	inorder(root);
 }
