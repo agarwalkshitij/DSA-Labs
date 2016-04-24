@@ -155,5 +155,11 @@ int main()
 		link temp=createnode(k);
 		root=insert(root,temp,NULL);
 	}
+	link temp = tree_search(root,5);
+	inorder(root);
+	if(temp!=NULL)
+		printf("%d hello\n",temp->pr);
+	//inorder(root);
+	root = tree_delete(root,temp);
 	inorder(root);
 }
